@@ -2,19 +2,25 @@
 #include "camera.h"
 #include <iostream>
 
-extern void drawScene();
-extern void handleKeyboardInput(unsigned char key, int x, int y);
+void drawScene();
+void setupLights();
 
 extern Camera camera;
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+
 	camera.applyTransformations();
+	//glEnable(GL_LIGHTING);
+	//setupLights();
 	drawScene();
+	//glDisable(GL_LIGHTING);
+	glFlush();
 	glutSwapBuffers();
 }
 
-bool lightStates[10] = { true, true, true, true, true, true, true, true, true, true };
+bool lightStates[2] = { false, false};
 
 void toggleLight(int lightNumber) {
 	lightStates[lightNumber] = !lightStates[lightNumber];
@@ -32,10 +38,10 @@ void keyboard(unsigned char key, int x, int y) {
 	switch (key)
 	{
 	case 'q':
-		toggleLight(3);
+		toggleLight(0);
 		break;
 	case 'e':
-		toggleLight(4);
+		toggleLight(1);
 		break;
 	default:
 		camera.handleKeyboard(key, x, y);
@@ -44,11 +50,15 @@ void keyboard(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void resize(int width, int height) {
-	glViewport(0, 0, width, height);
+void resize(int w, int h) {
+	if (h == 0)
+		h = 1;
+	float ratio = (GLfloat)w / (GLfloat)h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(80.0, width / height, 1.0, 600.0);
+
+	glViewport(0, 0, w, h);
+	gluPerspective(60, ratio, 1, 500);
 	glMatrixMode(GL_MODELVIEW);
 }
 

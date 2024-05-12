@@ -1,4 +1,4 @@
-#include "camera.h"
+﻿#include "camera.h"
 #include <math.h>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -9,6 +9,8 @@ Camera::Camera() : angleX(0.0), angleY(0.0), posX(0.0), posY(15.0), posZ(320.0),
 Camera::~Camera() {
     
 }
+
+// Áp  dụng các thay đổi (Di chuyển, hướng nhìn)
 void Camera::applyTransformations() {
     glLoadIdentity();
     glTranslatef(-posX, -posY, -posZ);
@@ -45,17 +47,6 @@ void Camera::handleKeyboard(unsigned char key, int x, int y) {
         posY -= step;
         break;
     }
-}
-
-
-void Camera::handleResize(int width, int height) {
-    if (height == 0) height = 1;
-    float ratio = width * 1.0 / height;
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0, ratio, 1.0, 1000.0);
-    glMatrixMode(GL_MODELVIEW);
 }
 
 void Camera::handleMouseMove(int x, int y) {

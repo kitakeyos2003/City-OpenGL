@@ -10,7 +10,6 @@ public:
 
     void applyTransformations();
     void handleKeyboard(unsigned char key, int x, int y);
-    void handleResize(int width, int height);
     void handleMouseMove(int x, int y);
     void handleMouseButton(int button, int state, int x, int y);
 

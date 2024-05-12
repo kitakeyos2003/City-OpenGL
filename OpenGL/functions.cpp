@@ -4,6 +4,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+const int nt = 60;
+const int ntheta = 20;
+double PI = 3.14159265389;
 
 static GLfloat colors[4][6] =
 {
@@ -16,7 +19,7 @@ static GLfloat colors[4][6] =
 static GLfloat v_cube[8][3] =
 {
 	{0.0, 0.0, 0.0}, //0
-	{0.0, 0.0, 3.0}, //1draw
+	{0.0, 0.0, 3.0}, //1
 	{3.0, 0.0, 3.0}, //2
 	{3.0, 0.0, 0.0}, //3
 	{0.0, 3.0, 0.0}, //4
@@ -25,16 +28,38 @@ static GLfloat v_cube[8][3] =
 	{3.0, 3.0, 0.0}  //7
 };
 
-
 static GLubyte quadIndices[6][4] =
 {
 	{0, 1, 2, 3}, //bottom
 	{4, 5, 6, 7}, //top
 	{5, 1, 2, 6}, //front
-	{3, 7, 4, 0}, // back
+	{0, 4, 7, 3}, // back is clockwise
 	{2, 3, 7, 6}, //right
-	{0, 4, 5,1}  //left
+	{1, 5, 4, 0}  //left is clockwise
 };
+
+static GLfloat v_trapezoid[8][3] =
+{
+	{0.0, 0.0, 0.0}, //0
+	{0.0, 0.0, 3.0}, //1
+	{3.0, 0.0, 3.0}, //2
+	{3.0, 0.0, 0.0}, //3
+	{0.5, 3.0, 0.5}, //4
+	{0.5, 3.0, 2.5}, //5
+	{2.5, 3.0, 2.5}, //6
+	{2.5, 3.0, 0.5}  //7
+};
+
+static GLubyte TquadIndices[6][4] =
+{
+	{0, 1, 2, 3}, //bottom
+	{4, 5, 6, 7}, //top
+	{5, 1, 2, 6}, //front
+	{0, 4, 7, 3}, // back is clockwise
+	{2, 3, 7, 6}, //right
+	{1, 5, 4, 0}  //left is clockwise
+};
+
 
 static void getNormal3p
 (GLfloat x1, GLfloat y1, GLfloat z1, GLfloat x2, GLfloat y2, GLfloat z2, GLfloat x3, GLfloat y3, GLfloat z3)
@@ -135,8 +160,6 @@ void drawTorus(GLfloat difX, GLfloat difY, GLfloat difZ, GLfloat ambX, GLfloat a
 	glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
 
 	glutSolidTorus(innerRadius, outerRadius, nsides, rings);
-
-	//glutSolidTorus(0.5, 10.0, 16, 12);
 }
 
 void drawCylinder(GLfloat difX, GLfloat difY, GLfloat difZ, GLfloat ambX, GLfloat ambY, GLfloat ambZ, GLfloat shine = 90)
@@ -235,4 +258,71 @@ GLuint loadTexture(const char* filename) {
 	generateMipmaps(textureID, width, height);
 	stbi_image_free(image);
 	return textureID;
+}
+
+void balloonBezier()
+{
+	int L = 5;
+	GLfloat balloonctrlpoints[6][3] =
+	{
+		{ 0.0, 0.0, 0.0}, {0.7,0.8,0},
+		{2,0.9,0}, {2.3,0.5,0},
+		{2.5, 0.1,0}, {2.4, 0, 0}
+	};
+
+	int i, j;
+	float x, y, z, r;
+	float x1, y1, z1, r1;
+	float theta;
+
+	const float startx = 0, endx = balloonctrlpoints[L][0];
+	const float dx = (endx - startx) / nt;
+	const float dtheta = 2 * PI / ntheta;
+
+	float t = 0;
+	float dt = 1.0 / nt;
+	float xy[2];
+	drawBezierCurve(t, xy, 5, balloonctrlpoints);
+	x = xy[0];
+	r = xy[1];
+	float p1x, p1y, p1z, p2x, p2y, p2z;
+	for (i = 0; i < nt; ++i)
+	{
+		theta = 0;
+		t += dt;
+		drawBezierCurve(t, xy, 5, balloonctrlpoints);
+		x1 = xy[0];
+		r1 = xy[1];
+		glBegin(GL_QUAD_STRIP);
+		for (j = 0; j <= ntheta; ++j)
+		{
+			theta += dtheta;
+			double cosa = cos(theta);
+			double sina = sin(theta);
+			y = r * cosa;
+			y1 = r1 * cosa;
+			z = r * sina;
+			z1 = r1 * sina;
+			glVertex3f(x, y, z);
+
+			if (j > 0)
+			{
+				setNormal(p1x, p1y, p1z, p2x, p2y, p2z, x, y, z);
+			}
+			else
+			{
+				p1x = x;
+				p1y = y;
+				p1z = z;
+				p2x = x1;
+				p2y = y1;
+				p2z = z1;
+
+			}
+			glVertex3f(x1, y1, z1);
+		}
+		glEnd();
+		x = x1;
+		r = r1;
+	}
 }

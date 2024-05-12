@@ -1,9 +1,7 @@
 #include "glut.h"
 
 void init() {
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION);
-    gluPerspective(45.0, 1.0, 1.0, 400.0);
-    glMatrixMode(GL_MODELVIEW);
+    glEnable(GL_NORMALIZE);
 }
